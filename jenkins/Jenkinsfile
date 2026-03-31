@@ -1,0 +1,109 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "healthcare-app"
+        VERSION = "1.0.${BUILD_NUMBER}"
+        NAMESPACE = "healthcare-secure"
+        SONAR_QUBE_SERVER = "sonar-server" 
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                dir('app') {
+                    sh 'npm install'
+                    sh 'npm test'
+                }
+            }
+        }
+
+        stage('Static Code Analysis (SonarQube)') {
+            steps {
+                withSonarQubeEnv("${SONAR_QUBE_SERVER}") {
+                    dir('app') {
+                        // Project analysis (requires sonar-scanner in Jenkins)
+                        sh "sonar-scanner -Dsonar.projectKey=healthcare-app -Dsonar.sources=."
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Dependency Check') {
+            steps {
+                dir('app') {
+                    // Fail if high vulnerabilities found
+                    sh 'npm audit --audit-level=high'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${DOCKER_IMAGE}:${VERSION} -f docker/Dockerfile ."
+                sh "docker tag ${DOCKER_IMAGE}:${VERSION} ${DOCKER_IMAGE}:latest"
+            }
+        }
+
+        stage('Security Scan (Trivy)') {
+            steps {
+                sh "bash security/trivy.sh ${DOCKER_IMAGE}:latest"
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                // Ensure namespace exists
+                sh "kubectl apply -f k8s/namespace.yaml"
+                // Update image in deployment and apply
+                sh "sed -i 's|image: healthcare-app:latest|image: ${DOCKER_IMAGE}:${VERSION}|g' k8s/deployment.yaml"
+                sh "kubectl apply -f k8s/deployment.yaml"
+                sh "kubectl apply -f k8s/service.yaml"
+            }
+        }
+
+        stage('Dynamic Security Testing (OWASP ZAP)') {
+            steps {
+                script {
+                    // Wait for deployment to be ready
+                    sh "kubectl rollout status deployment/healthcare-app -n ${NAMESPACE}"
+                    // Get Service URL (Minikube example)
+                    def serviceUrl = sh(script: "minikube service healthcare-service -n ${NAMESPACE} --url", returnStdout: true).trim()
+                    sh "bash security/zap-scan.sh ${serviceUrl}"
+                }
+            }
+        }
+
+        stage('Post-Deployment Health Check') {
+            steps {
+                script {
+                    def serviceUrl = sh(script: "minikube service healthcare-service -n ${NAMESPACE} --url", returnStdout: true).trim()
+                    sh "curl -f ${serviceUrl}/health || exit 1"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+        failure {
+            echo "Pipeline failed! Check security scans or code quality."
+        }
+    }
+}
