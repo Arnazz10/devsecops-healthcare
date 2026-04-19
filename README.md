@@ -2,7 +2,7 @@
 
 **MedGuard** is a security-first CI/CD control plane designed for HIPAA-regulated healthcare environments. It visualizes an 8-stage secure pipeline, enforces stringent compliance policies, and provides real-time security oversight.
 
-![MedGuard Dashboard](public/screenshot.png) *(Placeholder for screenshot - the UI features a premium dark theme with high-fidelity security gauges)*
+![MedGuard Dashboard](public/dashboard-preview.png)
 
 ## 🚀 Overview
 
