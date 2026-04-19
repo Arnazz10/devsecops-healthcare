@@ -1,82 +1,66 @@
-# Secure DevOps (DevSecOps) Implementation in a Healthcare System
+# 🛡️ MedGuard: DevSecOps Dashboard
 
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![DevSecOps](https://img.shields.io/badge/DevSecOps-Ready-brightgreen)
-![CI/CD](https://img.shields.io/badge/Pipeline-Jenkins-blue)
+**MedGuard** is a security-first CI/CD control plane designed for HIPAA-regulated healthcare environments. It visualizes an 8-stage secure pipeline, enforces stringent compliance policies, and provides real-time security oversight.
 
-This project demonstrates a robust and secure CI/CD pipeline for a Node.js-based healthcare application. It integrates multiple security layers—from static code analysis to dynamic testing and container scanning—ensuring the application is secure before it reaches production.
+![MedGuard Dashboard](public/screenshot.png) *(Placeholder for screenshot - the UI features a premium dark theme with high-fidelity security gauges)*
 
-## 🏥 Healthcare Application Features
-- **Patient Record API**: Secure endpoints to add and view patient metadata.
-- **Role-Based Access Control (RBAC)**: Simulation of roles (Admin, Doctor, Guest) for sensitive data access.
-- **Health Check**: `/health` endpoint for monitoring and orchestration (Liveness/Readiness probes).
-- **Security-First Headers**: Integrated `Helmet.js` and input validation.
+## 🚀 Overview
 
-### Preview
-![Project Preview](preview.png)
+In healthcare platform engineering, security isn't a final step—it's embedded at every stage. MedGuard integrates industry-standard security tooling (SAST, SCA, DAST, OPA) into a unified dashboard that gates deployments based on real-time risk posture.
 
-## 🛡️ DevSecOps Pipeline Overview
+### Core Features
 
-```mermaid
-graph LR
-    A[Code Commit] --> B[Clone repo]
-    B --> C[Install & Test]
-    C --> D[Static Malware/Code Scan - SonarQube]
-    D --> E[Dependency Audit - npm audit]
-    E --> F[Build Docker Image]
-    F --> G[Image Scan - Trivy]
-    G --> H[Deploy to K8s - Minikube]
-    H --> I[Dynamic Scan - OWASP ZAP]
-    I --> J[Health Check]
-```
+- **8-Stage Secure Pipeline**: Visual tracking of Source, SAST, SCA, Docker Build, Image Scan, Secrets Detection, K8s Policy Gate, and DAST.
+- **Fail-Closed Policy**: Automated deployment blocking if `CRITICAL` vulnerabilities or policy violations are detected.
+- **HIPAA Compliance Registry**: Automated technical control mapping (Access Control, Audit Controls, Integrity) with exportable evidence.
+- **Real-time Alert Feed**: Live security event streaming using Server-Sent Events (SSE) for anomaly detection.
+- **Vulnerability SLA Tracker**: Real-time tracking of CVE remediation timelines against HIPAA-mandated windows.
 
-### Security Gates
-The pipeline is configured to **Fail Fast**:
-- **SonarQube**: Fails if the Quality Gate (bugs, vulnerabilities, code smells) is not met.
-- **Dependency Scan**: Fails if HIGH or CRITICAL vulnerabilities are detected.
-- **Trivy Image Scan**: Fails if the Docker image has severe security flaws.
-- **OWASP ZAP**: Dynamic baseline scan to identify common web vulnerabilities.
+## 🛠️ Tech Stack
 
-## 🚀 Quick Start (Local Setup)
+- **Framework**: [Next.js 14+](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+
+## 🏗️ Architecture
+
+MedGuard utilizes a **Security Simulation Engine** that mocks a real-world secure CI/CD environment:
+
+1. **Trigger**: User initiates a pipeline run.
+2. **Simulation**: The engine runs through 8 stages, generating randomized but realistic security findings (e.g., SQLi, vulnerable base images, leaked AWS keys).
+3. **Evaluation**: If a `CRITICAL` finding exists, the deployment is marked as `BLOCKED`.
+4. **Monitoring**: Real-time alerts are streamed to the dashboard for immediate remediation.
+
+## 🏁 Getting Started
 
 ### Prerequisites
-- Docker & Docker Compose
-- Minikube
-- Node.js (for local testing)
+- Node.js 18.x or higher
+- npm or yarn
 
-### 1. Start the Environment
-Run the security stack using Docker Compose:
-```bash
-docker-compose up -d
-```
-This launches **SonarQube** (Port 9000) and **Jenkins** (Port 8080).
+### Installation
 
-### 2. Configure Jenkins
-1. Connect Jenkins to the repository.
-2. Ensure the following plugins are installed: `SonarQube Scanner`, `Docker Pipeline`, `Kubernetes Continuous Deploy`.
-3. Add the `SonarQube` server URL in Jenkins global configuration.
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd devsecops-healthcare
+   ```
 
-### 3. Run Locally
-```bash
-cd app
-npm install
-npm start
-```
-By default, the app runs on **port 3001** (check `.env`).
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## 📁 Project Structure
-- `/app`: The Node.js application and its unit tests.
-- `/docker`: Dockerfile for generating optimized images.
-- `/jenkins`: The Jenkinsfile defining the secure pipeline.
-- `/k8s`: Kubernetes manifests (Deployment, Service, Namespace).
-- `/security`: Helper scripts for Trivy and OWASP ZAP.
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-## 🧪 Security Validation
-- **Simulate Vulnerability**: Install a package with a known vulnerability (e.g., `axios@0.21.0`).
-- **Trigger Failure**: The pipeline will automatically stop at the `Dependency Check` stage.
-- **Verification**: Check the SonarQube dashboard for deep code analysis results.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
-
-### Author
-Arnab (@Arnazz10)
+*Built for the DevSecOps & Healthcare Engineering community.*
